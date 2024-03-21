@@ -1,0 +1,36 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+dist/
+egg-info/
+*.egg-info
+*.egg
+
+# Local development settings
+.env
+venv/
+.vscode/
+
+# IDE settings
+.idea/
+*.iml
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# SQLAlchemy migration scripts
+alembic/versions/*.py
+alembic/versions/*.pyc
+!alembic/versions/__init__.py
+
+# System files
+.DS_Store
+Thumbs.db
