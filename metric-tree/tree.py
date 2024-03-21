@@ -9,3 +9,6 @@ class Tree:
 
     def _join_datasets(self):
         pass
+
+    def plot_correlation(self, parent_metric_name:str, child_metric_name:str):
+        pass

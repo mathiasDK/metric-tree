@@ -8,10 +8,15 @@ class Metric:
         self.segment_group = {}
 
         # Validating input
-        self.__validate_input()
+        # self.__validate_input()
 
     def __validate_input(self):
         self.__validate_data_input()
+        self.__validate_name()
+
+    def __validate_name(self):
+        if self.name is None:
+            raise ValueError("Please provide an actual name for the metric")
     
     def __validate_data_input(self):
         _valid_column_names = ["user_id", "period", "value"]
@@ -31,5 +36,14 @@ class Metric:
     def add_segment_group(self, segment_name:str, list_of_users:list):
         pass
 
-    def plot_development():
+    def plot_development(self):
         pass
+
+if __name__ == "__main__":
+    data = pl.DataFrame({
+            "id": [1, 2, 3, 4],
+            "period": ["2022-01", "2022-02", "2022-03", "2022-04"],
+            "value": [100, 200, 300, 400]
+        })
+    metric = Metric(name="test", data=data)
+    metric._Metric__validate_data_input()
