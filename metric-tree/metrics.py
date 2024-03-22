@@ -34,7 +34,22 @@ class Metric:
         else:
             raise ValueError(f"Please provide a valid aggregate function {_valid_agg_funcs}")
         return agg_func
-
+    
+    def _agg_data(self, data)->pl.DataFrame:
+        # drop the user id column, but keep all others.
+        data = data.drop("user_id")
+        value_col = "value"
+        grouping_cols = [col for col in data.columns if col!=value_col]
+        if self.agg_func == "sum":
+            data = data.groupby(grouping_cols).agg(pl.sum(value_col))
+        elif self.agg_func == "mean":
+            data = data.groupby(grouping_cols).agg(pl.mean(value_col))
+        elif self.agg_func == "median":
+            data = data.groupby(grouping_cols).agg(pl.median(value_col))
+        else:
+            raise ValueError("Please provide a valid aggregate function.")
+        
+        return data
 
     def plot_development(self):
         pass
