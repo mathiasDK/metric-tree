@@ -13,12 +13,10 @@ class TestMetric(unittest.TestCase):
             "value": [100, 200, 300, 400]
         })
         
-        # Create an instance of Metric
-        metric = Metric(name="test_metric", data=data)
-        
         # Call the function to be tested
         try:
-            metric._Metric__validate_data_input()
+            # Create an instance of Metric
+            Metric(name="test_metric", data=data, agg_func="mean")
         except:
             self.fail("Raised a column error when the data input was valid")
 
@@ -28,16 +26,11 @@ class TestMetric(unittest.TestCase):
             "id": [1, 2, 3, 4],
             "period": ["2022-01", "2022-02", "2022-03", "2022-04"],
             "value": [100, 200, 300, 400]
-        })
-        
-        # Create an instance of Metric
-        metric = Metric(name="test_metric", data=data)
+        })        
 
         with self.assertRaises(ValueError):
-            metric._Metric__validate_data_input()
-        
-        # Assert that a value error is being raised
-        # self.assertRaises(ValueError, metric._Metric__validate_data_input())
+            # Create an instance of Metric
+            Metric(name="test_metric", data=data, agg_func="mean")
 
     def test_validate_data_input_invalid_columns_number(self):
         # Define test input data
@@ -48,12 +41,10 @@ class TestMetric(unittest.TestCase):
             "extra_column": [1,2,3,4],
         })
         
-        # Create an instance of Metric
-        metric = Metric(name="test_metric", data=data)
-        
         # Assert that a value error is being raised
         with self.assertRaises(ValueError):
-            metric._Metric__validate_data_input()
+            # Create an instance of Metric
+            Metric(name="test_metric", data=data, agg_func="mean")
 
 
 # If this script is run directly, run the tests

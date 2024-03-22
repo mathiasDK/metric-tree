@@ -1,26 +1,21 @@
 import polars as pl
 
 class Metric:
-    def __init__(self, name:str, data: pl.DataFrame)->None:
-        self.name = name
-        self.data = data
-        self.experiment_group = {}
-        self.segment_group = {}
+    def __init__(self, name:str, data: pl.DataFrame, agg_func:str)->None:
+        self.name = self.__validate_name(name)
+        self.data = self.__validate_data_input(data)
+        self.agg_func = self.__validate_agg_func(agg_func)
+        
 
-        # Validating input
-        # self.__validate_input()
-
-    def __validate_input(self):
-        self.__validate_data_input()
-        self.__validate_name()
-
-    def __validate_name(self):
-        if self.name is None:
+    def __validate_name(self, name):
+        if name is None:
             raise ValueError("Please provide an actual name for the metric")
+        
+        return name
     
-    def __validate_data_input(self):
+    def __validate_data_input(self, data):
         _valid_column_names = ["user_id", "period", "value"]
-        cols = self.data.columns
+        cols = data.columns
         
         for col in cols:
             if col not in _valid_column_names:
@@ -29,12 +24,17 @@ class Metric:
         for col in _valid_column_names:
             if col not in cols:
                 raise ValueError(f"Please provide all three columns: {_valid_column_names}")
+            
+        return data
+    
+    def __validate_agg_func(self, agg_func):
+        _valid_agg_funcs = ["sum", "mean", "median"]
+        if agg_func in _valid_agg_funcs:
+            self.agg_func = agg_func
+        else:
+            raise ValueError(f"Please provide a valid aggregate function {_valid_agg_funcs}")
+        return agg_func
 
-    def add_experiment_group(self, experiment_name:str, experiment_lookup:dict):
-        pass
-
-    def add_segment_group(self, segment_name:str, list_of_users:list):
-        pass
 
     def plot_development(self):
         pass
@@ -47,3 +47,4 @@ if __name__ == "__main__":
         })
     metric = Metric(name="test", data=data)
     metric._Metric__validate_data_input()
+    metric.add_experiment_group()
