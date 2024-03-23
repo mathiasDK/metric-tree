@@ -87,8 +87,50 @@ class SimulateData:
         data = pl.concat(dfs)
         self.data = data
 
-    def add_experiment(self, experiment_name:str, experiment_start_date:str, experiment_size:int):
-        pass
+    def add_experiment(self, experiment_name:str, experiment_start_date:datetime, experiment_groups:dict):
+        """Creating experiment groups and altering the metrics slightly after the experiment went live for the non control groups.
+        Do note that one of the experiment groups should be named 'control' - otherwise they will all be considered variant groups.
+
+        Args:
+            experiment_name (str): The name of the experiment.
+            experiment_start_date (datetime): The date the experiment went live, which is the date the data will be altered from.
+            experiment_groups (dict): A dictionary of each group and the users in each group. It should look like this:
+                {
+                    "control": [1,2,3,4],
+                    "variant": [5,6,7,8],
+                    "variant2": etc.
+                } 
+        """
+        variant_users = []
+        for group, users in experiment_groups.items():
+            if group.lower() != "control":
+                variant_users.append(users)
+        
+        # Extracting users in the variant groups after the experiment went live
+        variant_df = self.data.filter(
+            (pl.col("period")>=experiment_start_date) &  # only dates after the experiment went live
+            (pl.col("user_id").is_in(*variant_users)) # Only altering data for users in the variant group(s)
+        )
+
+        # Altering the data
+        metric_cols = [f"metric_{i}" for i in range(self.n_metrics)]
+        variant_dfs = []
+        for group, users in experiment_groups.items():
+            if group.lower() != "control":
+                sub_df = variant_df.filter(pl.col("user_id").is_in(users))
+                changes = np.random.normal(1.03, 0.03, size=self.n_metrics)
+                for col, change in zip(metric_cols, changes):
+                    sub_df = sub_df.with_columns(pl.col(col)*change)
+                variant_dfs.append(sub_df)
+
+        # Combining the data back into the original data
+        variant_df = pl.concat(variant_dfs)
+        control_users_df = self.data.filter((~pl.col("user_id").is_in(*variant_users)) | (pl.col("period")<experiment_start_date))
+        df = pl.concat([variant_df, control_users_df]).sort(by=["period", "user_id"])
+
+        # Setting the class variables
+        self.data = df
+        self.experiment_groups[experiment_name] = experiment_groups
 
     def add_segment(self, segment_name:str, segment_users:list) -> None:
         """When adding a segment it will be added to the segments variable of the class. This can then be used when plotting and filtering the main data.
@@ -101,6 +143,6 @@ class SimulateData:
         self.segments[segment_name] = segment_users
 
 if __name__ == "__main__":
-    s = SimulateData(3, 10, 5)
-    s.add_segment("High earners", [1,2,5])
-    print(s.segments)
+    s = SimulateData(3, 10, 10)
+    s.add_segment("Top users", [1,2,5])
+    s.add_experiment("Test1", datetime(2024,2,1), experiment_groups={"control": [1,3,5,7,9], "variant": [2,4,6,8,10]})
