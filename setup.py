@@ -19,7 +19,8 @@ setup(
             'pytest',
             'black',
             'flake8',
-            'isort'
+            'isort',
+            'datetime'
             # Add other development dependencies here
         ]
     },
