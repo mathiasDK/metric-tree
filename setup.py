@@ -7,7 +7,9 @@ setup(
     python_requires=">=3.11",
     install_requires=[
         "numpy",
-        "polars"
+        "polars",
+        "plotly",
+        "pandas"
     ],
     entry_points={
         'console_scripts': [
