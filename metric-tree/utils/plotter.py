@@ -5,13 +5,6 @@ import polars as pl
 
 class Plotter:
     def __init__(self) -> None:
-        self.layout = dict(
-            template="simple_white",
-            plot_bgcolor="#f8f5e7",
-            paper_bgcolor="#f8f5e7",
-            colorway=["#462023", "#234620", "#005288", "#DD663C", "#492a42", "#F5CC5B", "#30373b", "#E5C0D1",],
-            margin=dict(r=10, l=10, b=10, t=50)
-        )
         self.primary_colors = {
             "bordeaux": "#462023",
             "green": "#234620",
@@ -31,6 +24,25 @@ class Plotter:
             "mid": "#979b9d",
             "bad": "#005288",
         }
+        self.colorway=["#005288", "#DD663C", "#492a42", "#234620", "#F5CC5B", "#30373b", "#E5C0D1",]
+        self._create_layout_template()
+
+    def _create_layout_template(self):
+        fig = px.line(
+            x=[1,2], y=[1,2],
+            template="simple_white"
+        )
+        fig.update_layout(
+            plot_bgcolor="#f8f5e7",
+            paper_bgcolor="#f8f5e7",
+            colorway=["#005288", "#DD663C", "#492a42", "#234620", "#F5CC5B", "#30373b", "#E5C0D1",],
+            # margin=dict(r=10, l=10, b=10, t=50),
+            yaxis=dict(rangemode="tozero", showgrid=False, showline=True, linewidth=1, linecolor="black"),
+            xaxis=dict(showgrid=False, showline=True, linewidth=1, linecolor="black")
+        )
+        self.layout_template = dict(
+            layout=fig.layout
+        )
     
     def _set_end_label(self, fig, x, y, text, color):
         """
@@ -42,16 +54,13 @@ class Plotter:
             text (str): The label text
             color (str): The hex color of the text (same as line)
         """
-
-        # Making room for the labels
-        # fig.layout.margin['r'] *= 1.15
         fig.add_trace(
             go.Scatter(
-                x=x, y=y, text=text,
+                x=[x], y=[y], text=[text],
                 mode="markers+text",
-                marker=dict(color=color),
-                textfont=dict(color=color),
-                textposition="center right",
+                marker=dict(color=color, size=15),
+                textfont=dict(color=color, size=15),
+                textposition="middle right",
                 name=f"{x},{y}",
                 showlegend=False
             )
@@ -59,7 +68,7 @@ class Plotter:
         return fig
 
     def line_plot(self, df, x, y, comparison_type:str=None, color:str=None) -> go.Figure:
-        color_dict = None
+        color_dict = {}
         if comparison_type is not None:
             groups = df[color].unique()
             color_dict = {}
@@ -68,30 +77,34 @@ class Plotter:
                     if group.lower() == "control":
                         color_dict[group] = self.secondary_colors["light_grey"]
                     else:
-                        color_dict[group] = self.layout.colorway[i]
-        
+                        color_dict[group] = self.colorway[i]
+        elif color is not None:
+            for i, c in enumerate(df[color].unique()):
+                color_dict[c] = self.colorway[i]
         # Plotting
         fig = px.line(
             df,
             x=x, y=y,
             color=color,
-            color_discrete_map=color_dict
-        )
-
-        fig.update_layout(
-            self.layout
+            color_discrete_map=color_dict,
+            template = self.layout_template
         )
 
         # Adding end labels
+        for d in fig.data:
+            x = d["x"][-1]
+            y = d["y"][-1]
+            color = d["line"]["color"]
+            fig = self._set_end_label(fig, x, y, str(y), color)
 
         return fig
     
 if __name__ == "__main__":
+
     df = pl.DataFrame(data={
-        "x": [1,2,3,4, 1,2,3,4], 
-        "y": [4,3,2,3,5,6,4,4], 
+        "x": ["a", "b", "c", "d", "a", "b", "c", "d"], 
+        "y": [4,3,2,3,3.9,3.1,4,4], 
         "color": ["control","control","control","control","variant","variant","variant","variant",]})
     p = Plotter()
-    fig = p.line_plot(df, x="x", y="y", color="color")
-    print(fig.data)
+    fig = p.line_plot(df, x="x", y="y", comparison_type="experiment", color="color")
     fig.show()
