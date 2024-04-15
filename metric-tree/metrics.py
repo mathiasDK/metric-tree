@@ -6,7 +6,6 @@ class Metric:
         self.name = self.__validate_name(name)
         self.data = self.__validate_data_input(data)
         self.agg_func = self.__validate_agg_func(agg_func)
-        
 
     def __validate_name(self, name):
         if name is None:

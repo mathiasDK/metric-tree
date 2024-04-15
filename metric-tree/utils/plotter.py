@@ -1,4 +1,5 @@
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import plotly.express as px
 
 import polars as pl
@@ -73,11 +74,13 @@ class Plotter:
             groups = df[color].unique()
             color_dict = {}
             if comparison_type=="experiment":
-                for i, group in enumerate(groups):
+                i = 0
+                for group in groups:
                     if group.lower() == "control":
                         color_dict[group] = self.secondary_colors["light_grey"]
                     else:
                         color_dict[group] = self.colorway[i]
+                        i += 1
         elif color is not None:
             for i, c in enumerate(df[color].unique()):
                 color_dict[c] = self.colorway[i]
@@ -99,12 +102,52 @@ class Plotter:
 
         return fig
     
+    def line_plot_2_axes(self, df, x, y1, y2) -> go.Figure:
+        color_dict = {}
+        for i, c in enumerate([y1, y2]):
+            color_dict[c] = self.colorway[i]
+        # Plotting
+        fig_y1 = px.line(
+            df,
+            x=x, y=y1,
+            template = self.layout_template
+        )
+        fig_y2 = px.line(
+            df,
+            x=x, y=y2,
+            template = self.layout_template
+        )
+        fig_y2.update_traces(line_color=self.colorway[1])
+
+
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+        fig.add_trace(fig_y1.data[0], secondary_y=False)
+        fig.add_trace(fig_y2.data[0], secondary_y=True)
+
+        # Aligning y axes
+        fig.update_layout(
+            yaxis=dict(rangemode="tozero", title=f"{y1}"),
+            yaxis2=dict(rangemode="tozero", title=f"{y2}"),
+            template = self.layout_template
+        )
+
+        return fig
+    
 if __name__ == "__main__":
 
+    # df = pl.DataFrame(data={
+    #     "x": ["a", "b", "c", "d", "a", "b", "c", "d", "a", "b", "c", "d"], 
+    #     "y": [4,3,2,3,3.9,3.1,4,4,2,1,3,3.2], 
+    #     "color": ["control","control","control","control","variant","variant","variant","variant","variant2","variant2","variant2","variant2",]})
+    # p = Plotter()
+    # fig = p.line_plot(df, x="x", y="y", comparison_type="experiment", color="color")
+    # fig.show()
+
     df = pl.DataFrame(data={
-        "x": ["a", "b", "c", "d", "a", "b", "c", "d"], 
-        "y": [4,3,2,3,3.9,3.1,4,4], 
-        "color": ["control","control","control","control","variant","variant","variant","variant",]})
+        "x": ["a", "b", "c", "d",], 
+        "y1": [4,3,2,3,], 
+        "y2": [10,15,20,18], 
+        })
     p = Plotter()
-    fig = p.line_plot(df, x="x", y="y", comparison_type="experiment", color="color")
+    fig = p.line_plot_2_axes(df, x="x", y1="y1", y2="y2")
     fig.show()
