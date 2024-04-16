@@ -37,9 +37,13 @@ class Plotter:
             plot_bgcolor="#f8f5e7",
             paper_bgcolor="#f8f5e7",
             colorway=["#005288", "#DD663C", "#492a42", "#234620", "#F5CC5B", "#30373b", "#E5C0D1",],
-            # margin=dict(r=10, l=10, b=10, t=50),
             yaxis=dict(rangemode="tozero", showgrid=False, showline=True, linewidth=1, linecolor="black"),
-            xaxis=dict(showgrid=False, showline=True, linewidth=1, linecolor="black")
+            xaxis=dict(showgrid=False, showline=True, linewidth=1, linecolor="black"),
+            legend=dict(orientation="h", y=1.02, x=0.95, yanchor="bottom", xanchor="right", xref="paper"),
+            title=dict(x=0, xanchor="left", xref="paper"),
+            margin=dict(t=70, l=40, r=40, b=40),
+            width=800,
+            height=500
         )
         self.layout_template = dict(
             layout=fig.layout
@@ -106,28 +110,30 @@ class Plotter:
         color_dict = {}
         for i, c in enumerate([y1, y2]):
             color_dict[c] = self.colorway[i]
-        # Plotting
-        fig_y1 = px.line(
-            df,
-            x=x, y=y1,
-            template = self.layout_template
-        )
-        fig_y2 = px.line(
-            df,
-            x=x, y=y2,
-            template = self.layout_template
-        )
-        fig_y2.update_traces(line_color=self.colorway[1])
 
+        # Plotting
+        line_y1 = go.Scatter(
+            x=df[x], y=df[y1],
+            name=f"{y1} lhs", 
+            mode="lines",
+            line=dict(color=self.colorway[0])
+        )
+        line_y2 = go.Scatter(
+            x=df[x], y=df[y2],
+            name=f"{y2} rhs", 
+            mode="lines",
+            line=dict(color=self.colorway[1])
+        )
 
         fig = make_subplots(specs=[[{"secondary_y": True}]])
-        fig.add_trace(fig_y1.data[0], secondary_y=False)
-        fig.add_trace(fig_y2.data[0], secondary_y=True)
+        fig.add_trace(line_y1, secondary_y=False)
+        fig.add_trace(line_y2, secondary_y=True)
 
-        # Aligning y axes
+        # Adjusting layout
         fig.update_layout(
             yaxis=dict(rangemode="tozero", title=f"{y1}"),
             yaxis2=dict(rangemode="tozero", title=f"{y2}"),
+            title=f"{y1} vs {y2}",
             template = self.layout_template
         )
 
