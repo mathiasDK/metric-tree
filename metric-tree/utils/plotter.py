@@ -3,6 +3,7 @@ from plotly.subplots import make_subplots
 import plotly.express as px
 
 import polars as pl
+import pandas as pd
 
 class Plotter:
     def __init__(self) -> None:
@@ -72,22 +73,40 @@ class Plotter:
         )
         return fig
 
-    def line_plot(self, df, x, y, comparison_type:str=None, color:str=None) -> go.Figure:
+    def line_plot(self, df: pd.DataFrame | pl.DataFrame, x:str, y:str, experiment_comparison:bool=False, color:str=None) -> go.Figure:
+        """This function will return a line plot as a plotly.graph_object Figure.
+
+        It makes it easy to use the same function for plotting lines which are to be compared and it has a fixed structure for comparing groups in experiments.
+
+        If the comparison type is 'experiment' then it will mark the control group to light_grey and use the self.colorway for coloring the variants.
+        If it is not an experiment, then it will just default to using the colorway for coloring.
+
+        This plot will also add end value labels to each line.
+
+        Args:
+            df (pd.DataFrame | pl.DataFrame): The dataframe which is to be plotted.
+            x (str): The name of the x axis. This must be a column name from the df.
+            y (str): The name of the y variable. This must be a column name from the df.
+            experiment_comparison (bool, optional): _description_. Defaults to False.
+            color (str, optional): The column which will be used to color the lines. Defaults to None.
+
+        Returns:
+            go.Figure: The plot.
+        """
         color_dict = {}
-        if comparison_type is not None:
+        if experiment_comparison:
             groups = df[color].unique()
-            color_dict = {}
-            if comparison_type=="experiment":
-                i = 0
-                for group in groups:
-                    if group.lower() == "control":
-                        color_dict[group] = self.secondary_colors["light_grey"]
-                    else:
-                        color_dict[group] = self.colorway[i]
-                        i += 1
+            i = 0
+            for group in groups:
+                if group.lower() == "control":
+                    color_dict[group] = self.secondary_colors["light_grey"]
+                else:
+                    color_dict[group] = self.colorway[i]
+                    i += 1
         elif color is not None:
             for i, c in enumerate(df[color].unique()):
                 color_dict[c] = self.colorway[i]
+
         # Plotting
         fig = px.line(
             df,
@@ -106,7 +125,21 @@ class Plotter:
 
         return fig
     
-    def line_plot_2_axes(self, df, x, y1, y2) -> go.Figure:
+    def line_plot_2_axes(self, df: pd.DataFrame | pl.DataFrame, x: str, y1: str, y2: str) -> go.Figure:
+        """
+        This function creates a plot with two lines - one on each y axis.
+        The fields which are to be plotted will be postfixed with lhs and rhs respectively.
+        The x axis will be shared.
+
+        Args:
+            df (pd.DataFrame | pd.DataFrame): The dataframe which will be used for plotting.
+            x (str): The name of the x axis. This must be a column name in the dataframe.
+            y1 (str): The name of the y1 axis which is to be plotted on the left axis. This must be a column name in the dataframe.
+            y2 (str): The name of the y2 axis which is to be plotted on the right axis. This must be a column name in the dataframe.
+
+        Returns:
+            go.Figure: The plotly figure.
+        """
         color_dict = {}
         for i, c in enumerate([y1, y2]):
             color_dict[c] = self.colorway[i]
