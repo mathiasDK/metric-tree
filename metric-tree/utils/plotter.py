@@ -122,7 +122,6 @@ class Plotter:
             y = d["y"][-1]
             color = d["line"]["color"]
             fig = self._set_end_label(fig, x, y, str(y), color)
-
         return fig
     
     def line_plot_2_axes(self, df: pd.DataFrame | pl.DataFrame, x: str, y1: str, y2: str) -> go.Figure:
@@ -174,19 +173,20 @@ class Plotter:
     
 if __name__ == "__main__":
 
-    # df = pl.DataFrame(data={
-    #     "x": ["a", "b", "c", "d", "a", "b", "c", "d", "a", "b", "c", "d"], 
-    #     "y": [4,3,2,3,3.9,3.1,4,4,2,1,3,3.2], 
-    #     "color": ["control","control","control","control","variant","variant","variant","variant","variant2","variant2","variant2","variant2",]})
-    # p = Plotter()
-    # fig = p.line_plot(df, x="x", y="y", comparison_type="experiment", color="color")
-    # fig.show()
-
     df = pl.DataFrame(data={
-        "x": ["a", "b", "c", "d",], 
-        "y1": [4,3,2,3,], 
-        "y2": [10,15,20,18], 
+            'x': [1, 2, 1, 2],
+            'y': [10, 20, 30, 40],
+            'color': ['Control', 'Control', 'Variant', 'Variant']
         })
     p = Plotter()
-    fig = p.line_plot_2_axes(df, x="x", y1="y1", y2="y2")
+    fig = p.line_plot(df, 'x', 'y', experiment_comparison=True, color="color")
     fig.show()
+
+    # df = pl.DataFrame(data={
+    #     "x": ["a", "b", "c", "d",], 
+    #     "y1": [4,3,2,3,], 
+    #     "y2": [10,15,20,18], 
+    #     })
+    # p = Plotter()
+    # fig = p.line_plot_2_axes(df, x="x", y1="y1", y2="y2")
+    # fig.show()
