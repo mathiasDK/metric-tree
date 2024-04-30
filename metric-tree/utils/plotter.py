@@ -73,6 +73,51 @@ class Plotter:
         )
         return fig
 
+    def line_plot_experiment(self, df: pd.DataFrame | pl.DataFrame, x:str, y:str, color:str=None) -> go.Figure:
+        """This function will return a line plot as a plotly.graph_object Figure.
+
+        It makes it easy to use the same function for plotting lines for different experiment groups.
+
+        It will mark the control group to light_grey and use the self.colorway for coloring the variants.
+
+        This plot will also add end value labels to each line.
+
+        Args:
+            df (pd.DataFrame | pl.DataFrame): The dataframe which is to be plotted.
+            x (str): The name of the x axis. This must be a column name from the df.
+            y (str): The name of the y variable. This must be a column name from the df.
+            color (str, optional): The column which will be used to color the lines. Defaults to None.
+
+        Returns:
+            go.Figure: The plot.
+        """
+        color_dict = {}
+        groups = df[color].unique()
+        i = 0
+        for group in groups:
+            if group.lower() == "control":
+                color_dict[group] = self.secondary_colors["light_grey"]
+            else:
+                color_dict[group] = self.colorway[i]
+                i += 1
+
+        # Plotting
+        fig = px.line(
+            df,
+            x=x, y=y,
+            color=color,
+            color_discrete_map=color_dict,
+            template = self.layout_template
+        )
+
+        # Adding end labels
+        for d in fig.data:
+            x = d["x"][-1]
+            y = d["y"][-1]
+            color = d["line"]["color"]
+            fig = self._set_end_label(fig, x, y, str(y), color)
+        return fig
+
     def line_plot(self, df: pd.DataFrame | pl.DataFrame, x:str, y:str, experiment_comparison:bool=False, color:str=None) -> go.Figure:
         """This function will return a line plot as a plotly.graph_object Figure.
 

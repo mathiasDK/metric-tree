@@ -61,7 +61,7 @@ class Metric:
         p = Plotter()
         data = self.data # Add experiments
         plot_data = self._agg_data(data)
-        fig = p.line_plot(plot_data, x="period", y="value", comparison_type="experiment", color="variant_group")
+        fig = p.line_plot_experiment(plot_data, x="period", y="value", color="variant_group")
         return fig
     
     def plot_development_by_segments(self, segments:list):
