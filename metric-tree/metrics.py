@@ -1,11 +1,11 @@
 import polars as pl
+from .utils.plotter import Plotter
 
 class Metric:
     def __init__(self, name:str, data: pl.DataFrame, agg_func:str)->None:
         self.name = self.__validate_name(name)
         self.data = self.__validate_data_input(data)
         self.agg_func = self.__validate_agg_func(agg_func)
-        
 
     def __validate_name(self, name):
         if name is None:
@@ -52,7 +52,25 @@ class Metric:
         return data
 
     def plot_development(self):
-        pass
+        p = Plotter()
+        plot_data = self._agg_data(self.data)
+        fig = p.line_plot(plot_data, x="period", y="value")
+        return fig
+    
+    def plot_development_by_experiment(self, experiment_name:str):
+        p = Plotter()
+        data = self.data # Add experiments
+        plot_data = self._agg_data(data)
+        fig = p.line_plot_experiment(plot_data, x="period", y="value", color="variant_group")
+        return fig
+    
+    def plot_development_by_segments(self, segments:list):
+        p = Plotter()
+        data = self.data # Add segments
+        plot_data = self._agg_data(data)
+        fig = p.line_plot(plot_data, x="period", y="value", color="segment")
+        return fig
+
 
 if __name__ == "__main__":
     data = pl.DataFrame({
